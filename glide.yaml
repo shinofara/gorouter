@@ -1,0 +1,3 @@
+package: github.com/shinofara/router
+import:
+- package: github.com/gorilla/schema

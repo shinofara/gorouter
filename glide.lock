@@ -1,0 +1,6 @@
+hash: e43736b1eaf5a2ba89aa7ecf72f13091d7869817180f0c3754037ca682a9aae0
+updated: 2017-02-22T14:38:51.01175228+09:00
+imports:
+- name: github.com/gorilla/schema
+  version: 0e4426735fc1a1b9b2ef6236804b908dac01412f
+testImports: []
