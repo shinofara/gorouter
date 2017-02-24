@@ -4,7 +4,7 @@ import (
 	"fmt"
   "net/http"
 
-	"github.com/shinofara/gorouter/router"
+	"github.com/shinofara/gorouter"
 	"log"
 )
 
@@ -18,7 +18,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request, params Param) error {
 }
 
 func main() {
-	route := router.New()
+	route := gorouter.New()
 	route.GET("/", viewHandler)
 	log.Print("serve")
   http.ListenAndServe(":8080", route)
