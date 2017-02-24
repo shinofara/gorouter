@@ -13,7 +13,7 @@ type Param struct {
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request, params Param) error {
-	fmt.Fprintf(w, "Hello %+v", params.Name)
+	fmt.Fprintf(w, "Hello %+v", params)
 	return nil
 }
 

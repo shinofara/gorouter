@@ -35,42 +35,32 @@ func (r *Router) GET(path string, handle Handle) {
 
 func (r *Router) Handle(method, path string, handle Handle) {
 
-	//handleの検証
-	log.Print("handlerの追加を開始")
-	log.Print("handlerの引数の数を検証開始")
-
-	//handlerの引数検証
+	// Validate arguments
 	ft := reflect.TypeOf(handle)
 	if ft.NumIn() != NumArgs {
 		name := reflect.ValueOf(handle)
 		panic(fmt.Sprintf("handler %sには%dつ存在すべき", name, NumArgs))
 	}
-	log.Print(ft.NumIn())
 
 	//第三引数の検証
 	///ptrである事
 	arg := ft.In(ArgParams)
-//	if arg.Kind().String() != "ptr" {
-//		panic(fmt.Sprintf("第三引数がptrではなく、%s", arg.Kind().String()))
-//	}
-	
-	//構造体内のフィールドのタグチェック
-	log.Print("handlerのフィールドタグ検証を開始")
-	log.Print(&arg)
-
-	elm := arg
-	for i :=0; i <  elm.NumField(); i++ {
-		field := elm.Field(i)
-		log.Print(field.Tag.Get("schema"))
+	if arg.Kind().String() != "struct" {
+		panic(fmt.Sprintf("Absolute third argument is struct. But it is %s.", arg.Kind().String()))
 	}
+
+	// Validate the fields of the structure.
+	//for i :=0; i <  atg.NumField(); i++ {
+	//	field := arg.Field(i)
+	//}
 
 	if r.nodes == nil {
 		r.nodes = make(map[string]*Node)
 	}
 	
-	p := new(Node)
-	r.nodes[method] = p
-	p.addRoute(path, handle)
+	node := new(Node)
+	r.nodes[method] = node
+	node.addRoute(path, handle)
 }
 
 // http servewrの為に必要
@@ -79,47 +69,29 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
 	
 	if node := r.nodes[req.Method]; node != nil {
-		if handle := node.GetHandle(path); handle != nil {
-			log.Print(handle)
-			handler(w, req, handle)
+		if h := node.GetHandler(path); h != nil {
+			handler(w, req, h)
 			return
 		}
 	}
 }
 
-func handler(w http.ResponseWriter, req *http.Request, handler Handle) {
+func handler(w http.ResponseWriter, r *http.Request, h *Handler) {
+	if err := r.ParseForm(); err != nil {
+		panic(err)
+	}
 
-	fv := reflect.ValueOf(handler)
-	ft := reflect.TypeOf(handler)
+	//登録時に検証して生成しておくと、次のセッションまで引き継がれる為、handler実行時に評価される様にしておく
+	rvp := reflect.New(h.Type.In(2))
+	schema.NewDecoder().Decode(rvp.Interface(), r.Form)
 
-	//第3引数の型を取得
-	arg3 := ft.In(2)
-	log.Print(arg3.Kind().String())
-
-	//これはここじゃなくてregistのときに検証
-	bb := reflect.New(arg3)
-	log.Print(bb)
-	arg1 := reflect.ValueOf(w)
-	arg2 := reflect.ValueOf(req)
-
-	//ここで設定
-	//fvv := reflect.ValueOf(setparam) 
-//	result := fvv.Call([]reflect.Value{bb, arg2}) //[]reflect.Value ←戻り値も複数返せる為、スライスとなっている
-	//	log.Print(result[0])
-
-	//structVal:= reflect.Indirect(bb)
-	req.ParseForm()
-	log.Printf("%+v", req.Form)
-
-
-	v := reflect.New(ft.In(2))
-	decoder := schema.NewDecoder()
-
-	log.Printf("%+V", req.Form)
-	decoder.Decode(v.Interface(), req.Form)
-	log.Printf("%+V", v.Interface())
-
-	result := fv.Call([]reflect.Value{arg1, arg2, v.Elem()}) //[]reflect.Value ←戻り値も複数返せる為、スライスとなっている
-	log.Print(result[0])
-	log.Print("handlerの実行完了")
+	err := h.Value.Call([]reflect.Value{
+		reflect.ValueOf(w),
+		reflect.ValueOf(r),
+		rvp.Elem(),
+	})
+	
+	if err != nil {
+		log.Printf("%+V", err)
+	}
 }
