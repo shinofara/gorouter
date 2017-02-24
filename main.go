@@ -4,16 +4,16 @@ import (
 	"fmt"
   "net/http"
 
-	"github.com/shinofara/router/router"
+	"github.com/shinofara/gorouter/router"
 	"log"
 )
 
 type Param struct {
-	Hoge string `schema:"hoge"`
+	Name string `schema:"name"`
 }
 
-func viewHandler(w http.ResponseWriter, r *http.Request, params *Param) error {
-	fmt.Fprintf(w, "Hello World")
+func viewHandler(w http.ResponseWriter, r *http.Request, params Param) error {
+	fmt.Fprintf(w, "Hello %+v", params.Name)
 	return nil
 }
 

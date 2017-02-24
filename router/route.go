@@ -3,9 +3,9 @@ package router
 import (
 	"reflect"
 	"net/http"
-//	"github.com/gorilla/schema"
 	"log"
 	"fmt"
+	"github.com/gorilla/schema"
 )
 
 const (
@@ -50,15 +50,15 @@ func (r *Router) Handle(method, path string, handle Handle) {
 	//第三引数の検証
 	///ptrである事
 	arg := ft.In(ArgParams)
-	if arg.Kind().String() != "ptr" {
-		panic(fmt.Sprintf("第三引数がptrではなく、%s", arg.Kind().String()))
-	}
+//	if arg.Kind().String() != "ptr" {
+//		panic(fmt.Sprintf("第三引数がptrではなく、%s", arg.Kind().String()))
+//	}
 	
 	//構造体内のフィールドのタグチェック
 	log.Print("handlerのフィールドタグ検証を開始")
 	log.Print(&arg)
 
-	elm := arg.Elem()
+	elm := arg
 	for i :=0; i <  elm.NumField(); i++ {
 		field := elm.Field(i)
 		log.Print(field.Tag.Get("schema"))
@@ -97,17 +97,29 @@ func handler(w http.ResponseWriter, req *http.Request, handler Handle) {
 	log.Print(arg3.Kind().String())
 
 	//これはここじゃなくてregistのときに検証
-	fuga := struct{
-		Hoge string
-	}{"test"}
-	
-	//fuga構造体をhoge構造体にcast
-	hoge := reflect.ValueOf(&fuga).Convert(arg3)
-	log.Print(hoge)
+	bb := reflect.New(arg3)
+	log.Print(bb)
 	arg1 := reflect.ValueOf(w)
 	arg2 := reflect.ValueOf(req)
-	
-	result := fv.Call([]reflect.Value{arg1, arg2, hoge}) //[]reflect.Value ←戻り値も複数返せる為、スライスとなっている
+
+	//ここで設定
+	//fvv := reflect.ValueOf(setparam) 
+//	result := fvv.Call([]reflect.Value{bb, arg2}) //[]reflect.Value ←戻り値も複数返せる為、スライスとなっている
+	//	log.Print(result[0])
+
+	//structVal:= reflect.Indirect(bb)
+	req.ParseForm()
+	log.Printf("%+v", req.Form)
+
+
+	v := reflect.New(ft.In(2))
+	decoder := schema.NewDecoder()
+
+	log.Printf("%+V", req.Form)
+	decoder.Decode(v.Interface(), req.Form)
+	log.Printf("%+V", v.Interface())
+
+	result := fv.Call([]reflect.Value{arg1, arg2, v.Elem()}) //[]reflect.Value ←戻り値も複数返せる為、スライスとなっている
 	log.Print(result[0])
 	log.Print("handlerの実行完了")
 }
