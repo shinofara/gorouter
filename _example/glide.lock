@@ -1,0 +1,14 @@
+hash: 50bdb3ae4692c8a35a3e803cf3c595ac01662befda6d2c815f00e7fb41e2dc11
+updated: 2017-02-24T17:16:07.866820583+09:00
+imports:
+- name: github.com/gorilla/schema
+  version: 0e4426735fc1a1b9b2ef6236804b908dac01412f
+- name: github.com/harukasan/bindform
+  version: b96f6e697f0c0e712b0c8793c482d7365acacab1
+  subpackages:
+  - bindform
+- name: github.com/kr/pretty
+  version: cfb55aafdaf3ec08f0db22699ab822c50091b1c4
+- name: github.com/mholt/binding
+  version: f53601f1387c422be7317a2b01d96b2455d2d2d6
+testImports: []

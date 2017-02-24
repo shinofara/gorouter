@@ -1,0 +1,9 @@
+package: github.com/shinofara/router
+import:
+- package: github.com/gorilla/schema
+- package: github.com/mholt/binding
+  version: ^0.3.0
+- package: github.com/harukasan/bindform
+  subpackages:
+  - bindform
+- package: github.com/kr/pretty
