@@ -4,8 +4,24 @@ import (
 	"reflect"
 )
 
-type Node struct {
+type tree struct {
+	methods map[string]*node
+}
+
+func NewTree() *tree {
+	return &tree{
+		methods: make(map[string]*node),
+	}
+}
+
+type node struct {
 	path map[string]*Handler
+}
+
+func NewNode() *node {
+	return &node{
+		path: make(map[string]*Handler),
+	}
 }
 
 type Handler struct {
@@ -22,14 +38,16 @@ func NewHandler(h Handle) *Handler {
 	}
 }
 
-func (n *Node) addRoute(path string, handle Handle) {
+func (t *tree) Add(method, path string, handle Handle) {
 
-	if n.path == nil {
-		n.path = make(map[string]*Handler)
-	}	
-	n.path[path] = NewHandler(handle)
+	if t.methods[method] == nil {
+		t.methods[method] = NewNode()
+	}
+
+	t.methods[method].path[path] = NewHandler(handle)
 }
 
-func (n *Node) GetHandler(path string) *Handler {
-	return n.path[path]
+func (t *tree) GetHandler(method, path string) *Handler {
+	m := t.methods[method]
+	return m.path[path]
 }
